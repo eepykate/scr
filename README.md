@@ -12,6 +12,7 @@ Options
   -d / --display  [] Force display  (Doesn't require -m)
   -n / --nvenc       Force disable NVENC
   -S / --slop        Options to use for slop (Needs to be quoted)
+  -a / --audio       Record desktop audio
 
 [] = Option requires a value
 

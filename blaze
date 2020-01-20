@@ -71,6 +71,7 @@ help="
   \033[34m-d / --display\033[0m  \033[35m[]\033[0m Force display  (Doesn't require -m)
   \033[34m-n / --nvenc\033[0m       Force disable NVENC
   \033[34m-S / --slop\033[0m        Options to use for slop (Needs to be quoted)
+  \033[34m-a / --audio\033[0m       Record desktop audio
 
 \033[35m[]\033[0m = Option requires a value
 
@@ -100,6 +101,7 @@ while [ "$1" ]; do
 		-d|--display) display="$2"
 		              method="display"     ; shift  ;;
 		-S|--slop)    sloptions="$2"       ; shift  ;;
+		-a|--audio)   audio="-f pulse -i $(pacmd list-sources | grep -i '\* index' | grep -o '[0-9]')";;
 		--)           shift
 		              [ "$1" ] && output="$1"
 		              break                         ;;
@@ -200,7 +202,6 @@ method=\"$method\"" > "$preset_location"
 
 fi
 
-
 # detect if the user has a nvidia card and use nvenc
 [ ! "$nvenc" ] && lspci | grep -qi nvidia && \
 	nvenc="-vcodec h264_nvenc"
@@ -229,6 +230,7 @@ if [ "$ready" = yes ]; then
 	ffmpeg                         \
 	  -loglevel error              \
 	  -y                           \
+	  $audio                       \
 	  -f x11grab                   \
 	  -draw_mouse 1                \
 	  -s "${width}x$height"        \
