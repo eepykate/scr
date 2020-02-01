@@ -10,7 +10,7 @@
 #   shellcheck disable=SC2015
 #
 
-trap 'pkill -2 -P $(cat /tmp/blaze-pid)' 15
+trap 'pkill -2 -P $(cat /tmp/blaze-pid)' 15 2
 
 case "$(readlink /bin/sh)" in
 	*bash) print() { echo -e "$@"; };;
