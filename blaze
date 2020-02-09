@@ -20,21 +20,21 @@ esac
 deps() {
 	md="$(for i in $deps; do print " - \033[31m$i\033[0m"; done)"
 
-	print "\033[31mYou are missing dependencies\033[0m
-$md
-
-\033[34mRequired dependencies\033[0m
- - \033[34mffmpeg\033[0m         Actually recording
- - \033[34mrofi\033[0m           Selecting the options
- - \033[34mpkill\033[0m          Ending the recordings
-
-\033[35mAt least one of these is required\033[0m
- - \033[35mdisputils\033[0m      Selecting a display to record
- - \033[35mslop\033[0m           Selecting an area to record
-
-\033[32mOptional dependencies\033[0m
- - \033[32mnotify-send\033[0m    Letting the user know when the recording starts/ends
-"
+	print "\033[31mYou are missing dependencies\033[0m"
+	print "$md"
+	print
+	print "\033[34mRequired dependencies\033[0m"
+	print " - \033[34mffmpeg\033[0m         Actually recording"
+	print " - \033[34mrofi\033[0m           Selecting the options"
+	print " - \033[34mpkill\033[0m          Ending the recordings"
+	print
+	print "\033[35mAt least one of these is required\033[0m"
+	print " - \033[35mdisputils\033[0m      Selecting a display to record"
+	print " - \033[35mslop\033[0m           Selecting an area to record"
+	print
+	print "\033[32mOptional dependencies\033[0m"
+	print " - \033[32mnotify-send\033[0m    Letting the user know when the recording starts/ends"
+	print
 	exit 1
 }
 
@@ -59,38 +59,38 @@ m() {
 # output file, use $BLAZE_DIR and $BLAZE_FILE if they are set
 output="${BLAZE_DIR:-$PWD}/${BLAZE_FILE:-blaze-$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
 
-help="
-\033[34mOptions\033[0m
-  \033[34m-s / --save\033[0m        End the recording
-  \033[34m-h / --help\033[0m        Display what you're reading right now
-  \033[34m-c / --confirm\033[0m     Don't ask if the user is ready to record
-  \033[34m-p / --preset\033[0m   \033[35m[]\033[0m Save to and load from preset <x>
-  \033[34m-r / --rate\033[0m     \033[35m[]\033[0m Force framerate
-  \033[34m-b / --bitrate\033[0m  \033[35m[]\033[0m Force bitrate  (in MB)
-  \033[34m-m / --method\033[0m   \033[35m[]\033[0m Force method   (slop, display)
-  \033[34m-d / --display\033[0m  \033[35m[]\033[0m Force display  (Doesn't require -m)
-  \033[34m-n / --nvenc\033[0m       Force disable NVENC
-  \033[34m-S / --slop\033[0m        Options to use for slop (Needs to be quoted)
-  \033[34m-a / --audio\033[0m       Record desktop audio
-
-\033[35m[]\033[0m = Option requires a value
-
-Final argument not starting with \`-\` will be output file
-
-\033[34mVariables\033[0m
-  \033[34mBLAZE_DIR\033[0m    Location to save the video
-    \033[37mDefault:     Current directory\033[0m
-
-  \033[34mBLAZE_FILE\033[0m   Name of the saved video
-    \033[37mDefault:     'blaze-\$(date '+%Y-%m-%d_%H-%M-%S').mp4'\033[0m
-
-  \033[34mBLAZE_SLOP\033[0m   Options to use for slop
-    \033[37mDefault:     None\033[0m
-"
+help() {
+	print "\033[34mOptions\033[0m"
+	print "  \033[34m-s / --save\033[0m        End the recording"
+	print "  \033[34m-h / --help\033[0m        Display what you're reading right now"
+	print "  \033[34m-c / --confirm\033[0m     Don't ask if the user is ready to record"
+	print "  \033[34m-p / --preset\033[0m   \033[35m[]\033[0m Save to and load from preset <x>"
+	print "  \033[34m-r / --rate\033[0m     \033[35m[]\033[0m Force framerate"
+	print "  \033[34m-b / --bitrate\033[0m  \033[35m[]\033[0m Force bitrate  (in MB)"
+	print "  \033[34m-m / --method\033[0m   \033[35m[]\033[0m Force method   (slop, display)"
+	print "  \033[34m-d / --display\033[0m  \033[35m[]\033[0m Force display  (Doesn't require -m)"
+	print "  \033[34m-n / --nvenc\033[0m       Force disable NVENC"
+	print "  \033[34m-S / --slop\033[0m        Options to use for slop (Needs to be quoted)"
+	print "  \033[34m-a / --audio\033[0m       Record desktop audio"
+	print
+	print "\033[35m[]\033[0m = Option requires a value"
+	print
+	print "Final argument not starting with \`-\` will be output file"
+	print
+	print "\033[34mVariables\033[0m"
+	print "  \033[34mBLAZE_DIR\033[0m    Location to save the video"
+	print "    \033[37mDefault:     Current directory\033[0m"
+	print
+	print "  \033[34mBLAZE_FILE\033[0m   Name of the saved video"
+	print "    \033[37mDefault:     'blaze-\$(date '+%Y-%m-%d_%H-%M-%S').mp4'\033[0m"
+	print
+	print "  \033[34mBLAZE_SLOP\033[0m   Options to use for slop"
+	print "    \033[37mDefault:     None\033[0m"
+}
 
 while [ "$1" ]; do
 	case "$1" in
-		-h|--help)    print "$help"        ; exit   ;;
+		-h|--help)    help                 ; exit   ;;
 		-s|--save)    pkill blaze          ; exit   ;;
 		-c|--confirm) ready="yes"                   ;;
 		-p|--preset)  preset="$2"          ; shift  ;;
