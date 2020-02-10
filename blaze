@@ -117,6 +117,9 @@ done
 	print "No output file specified; exiting" &&
 	exit
 
+[ "$BLAZE_DIR" ] &&
+	mkdir -p "$BLAZE_DIR" 2>/dev/null
+
 [ -f /tmp/blaze-pid ] && echo "Blaze is already running, exiting." && exit
 
 
