@@ -18,11 +18,13 @@ case "$(readlink /bin/sh)" in
 esac
 
 deps() {
-	md="$(for i in $deps; do print " - \033[31m$i\033[0m"; done)"
+	[ "$1" ] || {
+		md="$(for i in $deps; do print " - \033[31m$i\033[0m"; done)"
 
-	print "\033[31mYou are missing dependencies\033[0m"
-	print "$md"
-	print
+		print "\033[31mYou are missing dependencies\033[0m"
+		print "$md"
+		print
+	}
 	print "\033[34mRequired dependencies\033[0m"
 	print " - \033[34mffmpeg\033[0m         Actually recording"
 	print " - \033[34mrofi\033[0m           Selecting the options"
@@ -63,6 +65,7 @@ help() {
 	print "\033[34mOptions\033[0m"
 	print "  \033[34m-s / --save\033[0m        End the recording"
 	print "  \033[34m-h / --help\033[0m        Display what you're reading right now"
+	print "  \033[34m-d / --deps\033[0m        Print dependencies"
 	print "  \033[34m-c / --confirm\033[0m     Don't ask if the user is ready to record"
 	print "  \033[34m-p / --preset\033[0m   \033[35m[]\033[0m Save to and load from preset <x>"
 	print "  \033[34m-r / --rate\033[0m     \033[35m[]\033[0m Force framerate"
@@ -72,6 +75,9 @@ help() {
 	print "  \033[34m-n / --nvenc\033[0m       Force disable NVENC"
 	print "  \033[34m-S / --slop\033[0m        Options to use for slop (Needs to be quoted)"
 	print "  \033[34m-a / --audio\033[0m       Record desktop audio"
+	print
+	print "To select an area, install 'slop',"
+	print "to select a display, install 'tudurom/disputils'"
 	print
 	print "\033[35m[]\033[0m = Option requires a value"
 	print
@@ -91,6 +97,7 @@ help() {
 while [ "$1" ]; do
 	case "$1" in
 		-h|--help)    help                 ; exit   ;;
+		-d|--deps)    deps -a              ; exit   ;;
 		-s|--save)    pkill blaze          ; exit   ;;
 		-c|--confirm) ready="yes"                   ;;
 		-p|--preset)  preset="$2"          ; shift  ;;
