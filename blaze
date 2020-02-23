@@ -61,6 +61,14 @@ m() {
 # output file, use $BLAZE_DIR and $BLAZE_FILE if they are set
 output="${BLAZE_DIR:-$PWD}/${BLAZE_FILE:-blaze-$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
 
+# find default audio device
+audio() {
+	pacmd="$(pacmd list-sources | grep -i -B 1 output)"
+	dev="$(echo "$pacmd" | grep -i '\* index' ||
+		echo "$pacmd" | grep -i 'index' | head -n 1)"
+	audio="-f pulse -i $(echo "$dev" | grep -o '[0-9]')"
+}
+
 help() {
 	print "\033[34mOptions\033[0m"
 	print "  \033[34m-s / --save\033[0m        End the recording"
@@ -108,7 +116,7 @@ while [ "$1" ]; do
 		-d|--display) display="$2"
 		              method="display"     ; shift  ;;
 		-S|--slop)    sloptions="$2"       ; shift  ;;
-		-a|--audio)   audio="-f pulse -i $(pacmd list-sources | grep -i '\* index' | grep -o '[0-9]')";;
+		-a|--audio)   audio;;
 		--)           shift
 		              [ "$1" ] && output="$1"
 		              break                         ;;
