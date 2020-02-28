@@ -127,11 +127,6 @@ while [ "$1" ]; do
 	shift
 done
 
-[ ! "$BLAZE_DIR" ] &&
-	[ ! "$output" ] &&
-	print "No output file specified; exiting" &&
-	exit
-
 [ "$BLAZE_DIR" ] &&
 	mkdir -p "$BLAZE_DIR" 2>/dev/null
 
