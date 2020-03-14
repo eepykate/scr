@@ -31,7 +31,7 @@ deps() {
 	print " - \033[34mpkill\033[0m          Ending the recordings"
 	print
 	print "\033[35mAt least one of these is required\033[0m"
-	print " - \033[35mdisputils\033[0m      Selecting a display to record"
+	print " - \033[35mmmutils\033[0m        Selecting a display to record"
 	print " - \033[35mslop\033[0m           Selecting an area to record"
 	print
 	print "\033[32mOptional dependencies\033[0m"
@@ -45,7 +45,7 @@ _() { command -v "$1" >/dev/null 2>&1 || deps="$deps $1"; }
 _ rofi
 _ pkill
 _ ffmpeg
-command -v dattr slop >/dev/null 2>&1 || deps="$deps disputils/slop"
+command -v mattr slop >/dev/null 2>&1 || deps="$deps disputils/slop"
 
 [ "$deps" ] && deps
 
@@ -150,7 +150,7 @@ fi
 if [ ! "$method" ]; then
 	# Check if the user has slop and disputils
 	command -v slop  >/dev/null 2>&1 && s=s
-	command -v dattr >/dev/null 2>&1 && d=d
+	command -v mattr >/dev/null 2>&1 && d=d
 
 	# if the user only has slop or disputils (But not both) use that
 	[ "$s" ] && method=selection
@@ -165,20 +165,20 @@ fi
 if [ "$method" = display ]; then
 
 	# get information about the screen
-	lsd="$(lsd)"
+	lsm="$(lsm)"
 
 	# if there's only one display, use that and skip asking
-	if [ $(print "$lsd" | wc -l) = 1 ]; then
-		display="$lsd"
+	if [ $(print "$lsm" | wc -l) = 1 ]; then
+		display="$lsm"
 	else  # if there are other displays ask the user which one to use
-		[ ! "$display" ] && display="$(print "$lsd" | m -p "Display to record")"
+		[ ! "$display" ] && display="$(print "$lsm" | m -p "Display to record")"
 	fi
 
 	# get information about the display
-	width="$(dattr  w "$display")"
-	height="$(dattr h "$display")"
-	offX="$(dattr x "$display")"
-	offY="$(dattr y "$display")"
+	width="$(mattr  w "$display")"
+	height="$(mattr h "$display")"
+	offX="$(mattr x "$display")"
+	offY="$(mattr y "$display")"
 
 elif [ "$method" = selection ] || [ "$method" = slop ]; then
 
