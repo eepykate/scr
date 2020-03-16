@@ -113,7 +113,7 @@ while [ "$1" ]; do
 		-m|--method)  method="$2"          ; shift  ;;
 		-r|--rate)    rate="$2"            ; shift  ;;
 		-n|--nvenc)   nvenc="  "                    ;;
-		-d|--display) display="$2"
+		-D|--display) display="$2"
 		              method="display"     ; shift  ;;
 		-S|--slop)    sloptions="$2"       ; shift  ;;
 		-a|--audio)   audio;;
