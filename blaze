@@ -12,10 +12,7 @@
 
 trap 'pkill -2 -P $(cat /tmp/blaze-pid)' 15 2
 
-case "$(readlink /bin/sh)" in
-	*bash) print() { echo -e "$@"; };;
-	*)     print() { echo    "$@"; };;
-esac
+print() { printf "%b\n" "$@"; }
 
 deps() {
 	[ "$1" ] || {
@@ -45,7 +42,7 @@ _() { command -v "$1" >/dev/null 2>&1 || deps="$deps $1"; }
 _ rofi
 _ pkill
 _ ffmpeg
-command -v mattr slop >/dev/null 2>&1 || deps="$deps disputils/slop"
+command -v mattr slop >/dev/null 2>&1 || deps="$deps mmutils/slop"
 
 [ "$deps" ] && deps
 
@@ -79,13 +76,13 @@ help() {
 	print "  \033[34m-r / --rate\033[0m     \033[35m[]\033[0m Force framerate"
 	print "  \033[34m-b / --bitrate\033[0m  \033[35m[]\033[0m Force bitrate  (in MB)"
 	print "  \033[34m-m / --method\033[0m   \033[35m[]\033[0m Force method   (slop, display)"
-	print "  \033[34m-d / --display\033[0m  \033[35m[]\033[0m Force display  (Doesn't require -m)"
+	print "  \033[34m-D / --display\033[0m  \033[35m[]\033[0m Force display  (Doesn't require -m)"
 	print "  \033[34m-n / --nvenc\033[0m       Force disable NVENC"
 	print "  \033[34m-S / --slop\033[0m        Options to use for slop (Needs to be quoted)"
 	print "  \033[34m-a / --audio\033[0m       Record desktop audio"
 	print
 	print "To select an area, install 'slop',"
-	print "to select a display, install 'tudurom/disputils'"
+	print "to select a display, install 'pockata/mmutils'"
 	print
 	print "\033[35m[]\033[0m = Option requires a value"
 	print
@@ -148,15 +145,15 @@ fi
 
 # ask the user what method they want to use
 if [ ! "$method" ]; then
-	# Check if the user has slop and disputils
+	# Check if the user has slop and mmutils
 	command -v slop  >/dev/null 2>&1 && s=s
 	command -v mattr >/dev/null 2>&1 && d=d
 
-	# if the user only has slop or disputils (But not both) use that
+	# if the user only has slop or mmutils (But not both) use that
 	[ "$s" ] && method=selection
 	[ "$d" ] && method=display
 
-	# if the user has both slop and disputils ask the user which one to use
+	# if the user has both slop and mmutils ask the user which one to use
 	[ "$s" ] && [ "$d" ] &&
 		method="$(print "display\nselection" | m -p "Method of recording")"
 
