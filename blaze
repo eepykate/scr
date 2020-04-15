@@ -63,7 +63,7 @@ audio() {
 	pacmd="$(pacmd list-sources | grep -i -B 1 output)"
 	dev="$(echo "$pacmd" | grep -i '\* index' ||
 		echo "$pacmd" | grep -i 'index' | head -n 1)"
-	audio="-f pulse -i $(echo "$dev" | grep -o '[0-9]')"
+	audio="-f pulse -i $(echo "$dev" | grep -o '[0-9]\+')"
 }
 
 help() {
