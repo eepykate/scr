@@ -29,7 +29,7 @@ deps() {
 	print
 	print "\033[35mAt least one of these is required\033[0m"
 	print " - \033[35mmmutils\033[0m        Selecting a display to record"
-	print " - \033[35mslop\033[0m           Selecting an area to record"
+	print " - \033[35mcrud\033[0m           Selecting an area to record"
 	print
 	print "\033[32mOptional dependencies\033[0m"
 	print " - \033[32mnotify-send\033[0m    Letting the user know when the recording starts/ends"
@@ -42,7 +42,7 @@ _() { command -v "$1" >/dev/null 2>&1 || deps="$deps $1"; }
 _ rofi
 _ pkill
 _ ffmpeg
-command -v mattr slop >/dev/null 2>&1 || deps="$deps mmutils/slop"
+command -v mattr crud >/dev/null 2>&1 || deps="$deps mmutils/crud"
 
 [ "$deps" ] && deps
 
@@ -75,13 +75,12 @@ help() {
 	print "  \033[34m-p / --preset\033[0m   \033[35m[]\033[0m Save to and load from preset <x>"
 	print "  \033[34m-r / --rate\033[0m     \033[35m[]\033[0m Force framerate"
 	print "  \033[34m-b / --bitrate\033[0m  \033[35m[]\033[0m Force bitrate  (in MB)"
-	print "  \033[34m-m / --method\033[0m   \033[35m[]\033[0m Force method   (slop, display)"
+	print "  \033[34m-m / --method\033[0m   \033[35m[]\033[0m Force method   (crud, display)"
 	print "  \033[34m-D / --display\033[0m  \033[35m[]\033[0m Force display  (Doesn't require -m)"
 	print "  \033[34m-n / --nvenc\033[0m       Force disable NVENC"
-	print "  \033[34m-S / --slop\033[0m        Options to use for slop (Needs to be quoted)"
 	print "  \033[34m-a / --audio\033[0m       Record desktop audio"
 	print
-	print "To select an area, install 'slop',"
+	print "To select an area, install 'crud',"
 	print "to select a display, install 'pockata/mmutils'"
 	print
 	print "\033[35m[]\033[0m = Option requires a value"
@@ -95,8 +94,6 @@ help() {
 	print "  \033[34mBLAZE_FILE\033[0m   Name of the saved video"
 	print "    \033[37mDefault:     'blaze-\$(date '+%Y-%m-%d_%H-%M-%S').mp4'\033[0m"
 	print
-	print "  \033[34mBLAZE_SLOP\033[0m   Options to use for slop"
-	print "    \033[37mDefault:     None\033[0m"
 }
 
 while [ "$1" ]; do
@@ -112,7 +109,6 @@ while [ "$1" ]; do
 		-n|--nvenc)   nvenc="  "                    ;;
 		-D|--display) display="$2"
 		              method="display"     ; shift  ;;
-		-S|--slop)    sloptions="$2"       ; shift  ;;
 		-a|--audio)   audio;;
 		--)           shift
 		              [ "$1" ] && output="$1"
@@ -145,15 +141,15 @@ fi
 
 # ask the user what method they want to use
 if [ ! "$method" ]; then
-	# Check if the user has slop and mmutils
-	command -v slop  >/dev/null 2>&1 && s=s
+	# Check if the user has crud and mmutils
+	command -v crud  >/dev/null 2>&1 && s=s
 	command -v mattr >/dev/null 2>&1 && d=d
 
-	# if the user only has slop or mmutils (But not both) use that
+	# if the user only has crud or mmutils (But not both) use that
 	[ "$s" ] && method=selection
 	[ "$d" ] && method=display
 
-	# if the user has both slop and mmutils ask the user which one to use
+	# if the user has both crud and mmutils ask the user which one to use
 	[ "$s" ] && [ "$d" ] &&
 		method="$(print "display\nselection" | m -p "Method of recording")"
 
@@ -177,16 +173,16 @@ if [ "$method" = display ]; then
 	offX="$(mattr x "$display")"
 	offY="$(mattr y "$display")"
 
-elif [ "$method" = selection ] || [ "$method" = slop ]; then
+elif [ "$method" = selection ] || [ "$method" = crud ]; then
 
 	# select an area and make each number a separate word
-	set -- $(slop $sloptions -f '%w %h %x %y')
+	eval "$(crud)"
 
 	# get information about the display
-	width="$1"
-	height="$2"
-	offX="$3"
-	offY="$4"
+	width="$W"
+	height="$H"
+	offX="$X"
+	offY="$Y"
 
 	[ "$(( width % 2 ))" = 1 ] && width="$(( width + 1 ))"
 	[ "$(( height % 2 ))" = 1 ] && height="$(( height + 1 ))"
