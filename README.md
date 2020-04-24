@@ -1,5 +1,7 @@
 # blaze
 
+Personal recording script, lots of weird deps, don't use
+
 ```
 Options
   -s / --save        End the recording
