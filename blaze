@@ -48,7 +48,7 @@ command -v mattr crud >/dev/null 2>&1 || deps="$deps mmutils/crud"
 
 
 m() {
-	rofi -dmenu -i "$@"
+	menu -i "$@"
 }
 
 # exit if X isn't running
