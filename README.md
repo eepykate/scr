@@ -4,30 +4,28 @@ Personal recording script, lots of weird deps, don't use
 
 ```
 Options
-  -s / --save        End the recording
-  -h / --help        Display what you're reading right now
-  -d / --deps        Print dependencies
-  -c / --confirm     Don't ask if the user is ready to record
-  -p / --preset   [] Save to and load from preset <x>
-  -r / --rate     [] Force framerate
-  -b / --bitrate  [] Force bitrate  (in MB)
-  -m / --method   [] Force method   (crud, display)
-  -D / --display  [] Force display  (Doesn't require -m)
-  -n / --nvenc       Force disable NVENC
-  -a / --audio       Record desktop audio
+ -s    save the recording
+ -h    display this message
+ -c    skip the confirm start message
+ -p  ? save and load settings from profile
+ -r  ? framerate
+ -b  ? force bitrate  (in MB)
+ -m  ? force method   (crud, display)
+ -d  ? force display
+ -n    disable NVENC for unsupported nvidia cards
+ -a    Record desktop audio
 
-To select an area, install 'crud',
-to select a display, install 'pockata/mmutils'
-
-[] = Option requires a value
-
-Final argument not starting with `-` will be output file
+? = Option requires another argument
 
 Variables
-  BLAZE_DIR    Location to save the video
-    Default:     Current directory
+ BLAZE_DIR: If unset, saves in the current directory
+ BLAZE_FILE: If unset, saves as 'blaze-$(date '+%Y-%m-%d_%H-%M-%S').mp4'
 
-  BLAZE_FILE   Name of the saved video
-    Default:     'blaze-$(date '+%Y-%m-%d_%H-%M-%S').mp4'
+Dependencies
+ github.com/pockata/mmutils | getting info about displays
+AND / OR
+ github.com/ix/crud         | selecting an area
 
+ ffmpeg
+ dmenu
 ```
