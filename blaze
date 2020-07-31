@@ -35,7 +35,7 @@ Options
  -p  ? save and load settings from profile
  -r  ? framerate
  -b  ? force bitrate  (in MB)
- -m  ? force method   (crud, display)
+ -m  ? force method   (crud, boox, display)
  -d  ? force display
  -n    disable NVENC for unsupported nvidia cards
  -a    Record desktop audio
@@ -50,9 +50,10 @@ Dependencies
  github.com/pockata/mmutils | getting info about displays
 AND / OR
  github.com/ix/crud         | selecting an area
+ github.com/BanchouBoo/boox | selecting an area
 
  ffmpeg
- dmenu
+ dmenu (or a clone) (with the binary name 'menu')
 EOF
 }
 
@@ -93,6 +94,7 @@ fi
 if [ ! "$method" ]; then
 	# Check if the user has crud and mmutils
 	command -v crud  >/dev/null 2>&1 && s=s
+	command -v boox  >/dev/null 2>&1 && s=s
 	command -v mattr >/dev/null 2>&1 && d=d
 
 	# if the user only has crud or mmutils (But not both) use that
@@ -122,9 +124,13 @@ case $method in
 		offX="$3"
 		offY="$4"
 	;;
-	crud|selection)
+	crud|boox|selection)
 		# select an area and make each number a separate word
-		eval "$(crud)"
+		if command -v boox; then
+			eval "$(boox 'W=%w\nH=%h\nX=%x\nY=%y')"
+		else
+			eval "$(crud)"
+		fi
 
 		# get information about the display
 		width="$W"

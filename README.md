@@ -10,7 +10,7 @@ Options
  -p  ? save and load settings from profile
  -r  ? framerate
  -b  ? force bitrate  (in MB)
- -m  ? force method   (crud, display)
+ -m  ? force method   (crud, boox, display)
  -d  ? force display
  -n    disable NVENC for unsupported nvidia cards
  -a    Record desktop audio
@@ -25,7 +25,8 @@ Dependencies
  github.com/pockata/mmutils | getting info about displays
 AND / OR
  github.com/ix/crud         | selecting an area
+ github.com/BanchouBoo/boox | selecting an area
 
  ffmpeg
- dmenu
+ dmenu (or a clone) (with the binary name 'menu')
 ```
