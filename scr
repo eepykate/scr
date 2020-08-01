@@ -72,14 +72,16 @@ Screenshotting:
  xclip           | copying image to clipboard
 EOF
 }
+xc() { xclip -sel clip -t image/png "$1"; }
 
 case $1 in
-	-F) shotgun -i "$(pfw)" "${2:-$n}"; exit;;
-	""|*.png) shotgun -g "$(mattr -g "$(pfm)")" "${1:-$n}"; exit;;
+	-F) shotgun -i "$(pfw)" "${2:-$n}"; xc "${2:-$n}"; exit;;
+	""|*.png) shotgun -g "$(mattr -g "$(pfm)")" "${1:-$n}"; xc "${1:-$n}"; exit;;
 	-S) w="$(boox)" &&
 		sleep 0.05 &&
 		n="${n%.*}-${w%%+*}.png" &&
 		shotgun -g "$w" "${2:-$n}"
+		xc "${2:-$n}"
 		exit
 	;;
 esac
