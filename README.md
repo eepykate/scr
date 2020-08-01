@@ -1,6 +1,6 @@
-# blaze
+# rec(ord)
 
-Personal recording script, lots of weird deps, don't use
+Personal recording script
 
 ```
 Options
@@ -18,8 +18,8 @@ Options
 ? = Option requires another argument
 
 Variables
- BLAZE_DIR: If unset, saves in the current directory
- BLAZE_FILE: If unset, saves as 'blaze-$(date '+%Y-%m-%d_%H-%M-%S').mp4'
+ REC_DIR: If unset, saves in the current directory
+ REC_FILE: If unset, saves as 'rec-$(date '+%Y-%m-%d_%H-%M-%S').mp4'
 
 Dependencies
  github.com/pockata/mmutils | getting info about displays
