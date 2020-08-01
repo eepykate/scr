@@ -1,11 +1,12 @@
 #!/bin/sh
 #
-#   shellcheck disable=SC2086 disable=SC2046 disable=SC2015
+##
+##   Shitty sCreenshot scRipt
+##     (and Recording ^)
+##
 #
 
-trap 'pkill -2 -P $(cat /tmp/rec-pid)' 15 2
-
-print() { printf "%b\n" "$@"; }
+trap 'pkill -2 -P $(cat /tmp/"${0##*/}"-pid)' 15 2
 
 m() {
 	menu -i "$@"
@@ -13,10 +14,11 @@ m() {
 
 # exit if X isn't running
 [ ! "$DISPLAY" ] &&
-	print "Can't open display; exiting" && exit
+	echo "Can't open display; exiting" && exit
 
 # output file, use $REC_DIR and $REC_FILE if they are set
-output="${REC_DIR:-$PWD}/${REC_FILE:-rec-$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
+output="${REC_DIR:-$PWD}/${REC_FILE:-$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
+n="${SCR_DIR:-$PWD}/${SCR_FILE:-$(date '+%Y-%m-%d_%H-%M-%S').png}"
 
 # find default audio device
 audio() {
@@ -29,48 +31,74 @@ audio() {
 help() {
 	cat << EOF
 Options
+ -S    screenshot a selection
+ -F    screenshot focused window
+
  -s    save the recording
  -h    display this message
  -c    skip the confirm start message
  -p  ? save and load settings from profile
- -r  ? framerate
+ -f  ? framerate
  -b  ? force bitrate  (in MB)
- -m  ? force method   (crud, boox, display)
+ -m  ? force method   (boox, display)
  -d  ? force display
  -n    disable NVENC for unsupported nvidia cards
  -a    Record desktop audio
+
+if 0 args are provided, screenshot the focused monitor
+use '-r' as a placeholder option
 
 ? = Option requires another argument
 
 Variables
  REC_DIR: If unset, saves in the current directory
- REC_FILE: If unset, saves as 'rec-\$(date '+%Y-%m-%d_%H-%M-%S').mp4'
+ REC_FILE: If unset, saves as '\$(date '+%Y-%m-%d_%H-%M-%S').mp4'
+
+ SCR_DIR: If unset, saves in the current directory
+ SCR_FILE: If unset, saves as '\$(date '+%Y-%m-%d_%H-%M-%S').png'
 
 Dependencies
  github.com/pockata/mmutils | getting info about displays
 AND / OR
- github.com/ix/crud         | selecting an area
  github.com/BanchouBoo/boox | selecting an area
 
+Recording:
  ffmpeg
  dmenu (or a clone) (with the binary name 'menu')
+
+Screenshotting:
+ github.com/neXromancers/shotgun
+ wmutils         | getting focused window
+ xclip           | copying image to clipboard
 EOF
 }
+
+case $1 in
+	-F) shotgun -i "$(pfw)" "${2:-$n}"; exit;;
+	""|*.png) shotgun -g "$(mattr -g "$(pfm)")" "${1:-$n}"; exit;;
+	-S) w="$(boox)" &&
+		sleep 0.05 &&
+		n="${n%.*}-${w%%+*}.png" &&
+		shotgun -g "$w" "${2:-$n}"
+		exit
+	;;
+esac
 
 while [ "$1" ]; do
 	case "$1" in
 		-h|--help) help;   exit;;
-		-s) pkill -x rec;  exit;;
+		-r) ;;
+		-s) pkill -x "${0##*/}";  exit;;
 		-a) audio;;
 		-c) ready="yes";;
 		-p) profile="$2";  shift;;
 		-m) method="$2";   shift;;
-		-r) rate="$2";     shift;;
+		-f) rate="$2";     shift;;
 		-n) nvenc=" ";;
 		-d) display="$2" method="display";  shift;;
 		-b) bitrate="-b:v ${2}M";           shift;;
 		--)	[ "$2" ] && output="$2";        break;;
-		-*) print "Invalid option '$1'";     exit;;
+		-*) echo "Invalid option '$1'";     exit;;
 		*)  output="$1";   break;;
 	esac
 	shift
@@ -79,31 +107,30 @@ done
 [ "$REC_DIR" ] &&
 	mkdir -p "$REC_DIR"
 
-[ -f /tmp/rec-pid ] && notify-send "rec is already running, exiting." && exit
+[ -f /tmp/"${0##*/}"-pid ] && notify-send "${0##*/} is already running, exiting." && exit
 
 
 # load profile
 if [ "$profile" ]; then
-	mkdir -p "${XDG_CONFIG_HOME:-~/.config}/rec" >/dev/null 2>&1
-	profile_location="${XDG_CONFIG_HOME:-~/.config}/rec/rec-profile-$profile"
+	mkdir -p "${XDG_CONFIG_HOME:-~/.config}/scr" >/dev/null 2>&1
+	profile_location="${XDG_CONFIG_HOME:-~/.config}/scr/scr-$profile"
 	[ -f "$profile_location" ] && . "$profile_location"
 fi
 
 
 
 if [ ! "$method" ]; then
-	# Check if the user has crud and mmutils
-	command -v crud  >/dev/null 2>&1 && s=s
+	# Check if the user has boox and mmutils
 	command -v boox  >/dev/null 2>&1 && s=s
 	command -v mattr >/dev/null 2>&1 && d=d
 
-	# if the user only has crud or mmutils (But not both) use that
+	# if the user only has boox or mmutils (But not both) use that
 	[ "$s" ] && method=selection
 	[ "$d" ] && method=display
 
-	# if the user has both crud and mmutils ask the user which one to use
+	# if the user has both boox and mmutils ask the user which one to use
 	[ "$s" ] && [ "$d" ] &&
-		method="$(print "display\nselection" | m -p "Method of recording")"
+		method="$(printf "display\nselection\n" | m -p "Method of recording")"
 fi
 case $method in
 	display)
@@ -111,10 +138,10 @@ case $method in
 		lsm="$(lsm)"
 
 		# if there's only one display, use that and skip asking
-		if [ $(print "$lsm" | wc -l) = 1 ]; then
+		if [ "$(echo "$lsm" | wc -l)" = 1 ]; then
 			display="$lsm"
 		else  # if there are other displays ask the user which one to use
-			[ ! "$display" ] && display="$(print "$lsm" | m -p "Display to record")"
+			[ ! "$display" ] && display="$(printf %b "$lsm" | m -p "Display to record")"
 		fi
 
 		# get information about the display
@@ -124,13 +151,9 @@ case $method in
 		offX="$3"
 		offY="$4"
 	;;
-	crud|boox|selection)
+	boox|selection)
 		# select an area and make each number a separate word
-		if command -v boox; then
-			eval "$(boox 'W=%w\nH=%h\nX=%x\nY=%y')"
-		else
-			eval "$(crud)"
-		fi
+		eval "$(boox 'W=%w\nH=%h\nX=%x\nY=%y')"
 
 		# get information about the display
 		width="$W"
@@ -142,14 +165,14 @@ case $method in
 		[ "$(( height % 2 ))" = 1 ] && height="$(( height + 1 ))"
 	;;
 	*)
-		print "Invalid method; exiting"
+		echo "Invalid method; exiting"
 	;;
 esac
 
 
 
 # prompt for framerate
-[ ! "$rate" ] && rate="$(print "30\n60" | m -p "Framerate")"
+[ ! "$rate" ] && rate="$(printf "30\n60\n" | m -p "Framerate")"
 
 # save profile
 if [ "$profile" ]; then
@@ -167,12 +190,12 @@ fi
 
 
 # confirm starting the recording
-[ ! "$ready" ] && ready="$(print "yes\nno" | m -p "Start the recording")"
+[ ! "$ready" ] && ready="$(printf "yes\nno\n" | m -p "Start the recording")"
 
 if [ "$ready" = yes ]; then
 	notify-send -t 1500 "Recording Started"
 
-	echo $$ > /tmp/rec-pid
+	echo $$ > /tmp/"${0##*/}"-pid
 
 	ffmpeg                         \
 	  -loglevel error              \
@@ -189,6 +212,6 @@ if [ "$ready" = yes ]; then
 	  -q:v 0                       \
 	  "$output"
 
-	rm /tmp/rec-pid
+	rm /tmp/"${0##*/}"-pid
 	notify-send -t 2000 "Recording Stopped"
 fi
