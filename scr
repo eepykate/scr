@@ -22,10 +22,12 @@ n="${SCR_DIR:-$PWD}/${SCR_FILE:-$(date '+%Y-%m-%d_%H-%M-%S').png}"
 
 # find default audio device
 audio() {
-	pacmd="$(pacmd list-sources | grep -i -B 1 output)"
-	dev="$(echo "$pacmd" | grep -i '\* index' ||
-		echo "$pacmd" | grep -i 'index' | head -n 1)"
-	audio="-f pulse -i $(echo "$dev" | grep -o '[0-9]\+')"
+	[ "$1" ] || {
+		pacmd="$(pacmd list-sources | grep -i -B 1 output)"
+		dev="$(echo "$pacmd" | grep -i '\* index' ||
+			echo "$pacmd" | grep -i 'index' | head -n 1 | grep -o '[0-9]\+')"
+	}
+	audio="-f pulse -i ${1:-$dev}"
 }
 
 help() {
@@ -91,7 +93,7 @@ while [ "$1" ]; do
 		-h|--help) help;   exit;;
 		-r) ;;
 		-s) pkill -x "${0##*/}";  exit;;
-		-a) audio;;
+		-a*) audio ${1#-a};;
 		-c) ready="yes";;
 		-p) profile="$2";  shift;;
 		-m) method="$2";   shift;;
@@ -99,6 +101,7 @@ while [ "$1" ]; do
 		-n) nvenc=" ";;
 		-d) display="$2" method="display";  shift;;
 		-b) bitrate="-b:v ${2}M";           shift;;
+		-e) extra=$2; shift;;
 		--)	[ "$2" ] && output="$2";        break;;
 		-*) echo "Invalid option '$1'";     exit;;
 		*)  output="$1";   break;;
@@ -132,7 +135,7 @@ if [ ! "$method" ]; then
 
 	# if the user has both boox and mmutils ask the user which one to use
 	[ "$s" ] && [ "$d" ] &&
-		method="$(printf "display\nselection\n" | m -p "Method of recording")"
+		method="$(printf "display\nselection\n" | m -p "Method of recording")" || exit 1
 fi
 case $method in
 	display)
@@ -143,7 +146,7 @@ case $method in
 		if [ "$(echo "$lsm" | wc -l)" = 1 ]; then
 			display="$lsm"
 		else  # if there are other displays ask the user which one to use
-			[ ! "$display" ] && display="$(printf %b "$lsm" | m -p "Display to record")"
+			[ ! "$display" ] && display="$(printf %b "$lsm" | m -p "Display to record")" || exit 1
 		fi
 
 		# get information about the display
@@ -179,7 +182,7 @@ esac
 # save profile
 if [ "$profile" ]; then
 	cat << EOF > "$profile_location"
-${bitrate:+bitrate="$bitrate"}
+${bitrate:+bitrate=\""$bitrate"\"}
 ${display:+display="$display"}
 ${rate:+rate="$rate"}
 method="$method"
@@ -212,6 +215,7 @@ if [ "$ready" = yes ]; then
 	  -pix_fmt yuv420p             \
 	  $nvenc                       \
 	  -q:v 0                       \
+	  $extra                       \
 	  "$output"
 
 	rm /tmp/"${0##*/}"-pid
