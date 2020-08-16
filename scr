@@ -9,7 +9,20 @@
 trap 'pkill -2 -P $(cat /tmp/"${0##*/}"-pid)' 15 2
 
 m() {
-	menu -i "$@"
+	for i in menu 'rofi -dmenu' dmenu; do
+		command -v "${i%% *}" >/dev/null &&
+			{ "$i" "$@"; return $?; }
+	done
+}
+
+sel() {
+	a='%w %h %x %y'
+	command -v boox >/dev/null && { boox "$a"; return $?; }
+	command -v slop >/dev/null && { slop -f "$a"; return $?; }
+	command -v crud >/dev/null && { eval "$(crud "$a")" && \
+		echo "$W" "$H" "$X" "$Y"; return $?; }
+	echo "missing selection tool, exiting"
+	exit 1
 }
 
 # exit if X isn't running
@@ -32,6 +45,12 @@ audio() {
 
 help() {
 	cat << EOF
+Examples:
+ # select an area then record it at 30fps
+ scr -m s -f 30 -c
+ # select an area then record it at 30fps and save as 'recording.mp4'
+ scr -m s -f 30 -c recording.mp4
+
 Options
  -S    screenshot a selection
  -F    screenshot focused window
@@ -42,7 +61,7 @@ Options
  -p  ? save and load settings from profile
  -f  ? framerate
  -b  ? force bitrate  (in MB)
- -m  ? force method   (boox, display)
+ -m  ? force method   (selection, display)
  -d  ? force display
  -n    disable NVENC for unsupported nvidia cards
  -a    Record desktop audio
@@ -62,11 +81,11 @@ Variables
 Dependencies
  github.com/pockata/mmutils | getting info about displays
 AND / OR
- github.com/BanchouBoo/boox | selecting an area
+ github.com/BanchouBoo/boox / slop / crud | selecting an area
 
 Recording:
  ffmpeg
- dmenu (or a clone) (with the binary name 'menu')
+ rofi / dmenu / clone with binary name 'menu'
 
 Screenshotting:
  github.com/neXromancers/shotgun
@@ -74,6 +93,7 @@ Screenshotting:
  xclip           | copying image to clipboard
 EOF
 }
+
 xc() { xclip -sel clip -t image/png "$1"; }
 
 case $1 in
@@ -124,9 +144,9 @@ fi
 
 
 
-if [ ! "$method" ]; then
+[ "$method" ] || {
 	# Check if the user has boox and mmutils
-	command -v boox  >/dev/null 2>&1 && s=s
+	command -v boox crud slop >/dev/null 2>&1 && s=s
 	command -v mattr >/dev/null 2>&1 && d=d
 
 	# if the user only has boox or mmutils (But not both) use that
@@ -136,9 +156,9 @@ if [ ! "$method" ]; then
 	# if the user has both boox and mmutils ask the user which one to use
 	[ "$s" ] && [ "$d" ] &&
 		method="$(printf "display\nselection\n" | m -p "Method of recording")" || exit 1
-fi
+}
 case $method in
-	display)
+	d*)
 		# get information about the screen
 		lsm="$(lsm)"
 
@@ -156,15 +176,15 @@ case $method in
 		offX="$3"
 		offY="$4"
 	;;
-	boox|selection)
+	s*)
 		# select an area and make each number a separate word
-		eval "$(boox 'W=%w\nH=%h\nX=%x\nY=%y')"
+		set -- $(sel)
 
 		# get information about the display
-		width="$W"
-		height="$H"
-		offX="$X"
-		offY="$Y"
+		width="$1"
+		height="$2"
+		offX="$3"
+		offY="$4"
 
 		[ "$((  width % 2 ))" = 1 ] &&  width="$((  width + 1 ))"
 		[ "$(( height % 2 ))" = 1 ] && height="$(( height + 1 ))"
@@ -177,17 +197,15 @@ esac
 
 
 # prompt for framerate
-[ ! "$rate" ] && rate="$(printf "30\n60\n" | m -p "Framerate")"
+[ "$rate" ] || rate="$(printf "30\n60\n" | m -p "Framerate")"
 
 # save profile
-if [ "$profile" ]; then
-	cat << EOF > "$profile_location"
-${bitrate:+bitrate=\""$bitrate"\"}
-${display:+display="$display"}
-${rate:+rate="$rate"}
-method="$method"
+[ "$profile" ] && cat << EOF > "$profile_location"
+	${bitrate:+bitrate=\""$bitrate"\"}
+	${display:+display="$display"}
+	${rate:+rate="$rate"}
+	method="$method"
 EOF
-fi
 
 # detect if the user has a nvidia card and use nvenc
 [ ! "$nvenc" ] && lspci | grep -qi nvidia &&

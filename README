@@ -1,6 +1,12 @@
     Shitty sCreenshot scRipt
       (and Recording ^)
 
+Examples:
+ # select an area then record it at 30fps
+ scr -m s -f 30 -c
+ # select an area then record it at 30fps and save as 'recording.mp4'
+ scr -m s -f 30 -c recording.mp4
+
 Options
  -S    screenshot a selection
  -F    screenshot focused window
@@ -11,7 +17,7 @@ Options
  -p  ? save and load settings from profile
  -f  ? framerate
  -b  ? force bitrate  (in MB)
- -m  ? force method   (boox, display)
+ -m  ? force method   (selection, display)
  -d  ? force display
  -n    disable NVENC for unsupported nvidia cards
  -a    Record desktop audio
@@ -23,19 +29,19 @@ use '-r' as a placeholder option
 
 Variables
  REC_DIR: If unset, saves in the current directory
- REC_FILE: If unset, saves as '$(date '+%Y-%m-%d_%H-%M-%S').mp4'
+ REC_FILE: If unset, saves as '\$(date '+%Y-%m-%d_%H-%M-%S').mp4'
 
  SCR_DIR: If unset, saves in the current directory
- SCR_FILE: If unset, saves as '$(date '+%Y-%m-%d_%H-%M-%S').png'
+ SCR_FILE: If unset, saves as '\$(date '+%Y-%m-%d_%H-%M-%S').png'
 
 Dependencies
  github.com/pockata/mmutils | getting info about displays
 AND / OR
- github.com/BanchouBoo/boox | selecting an area
+ github.com/BanchouBoo/boox / slop / crud | selecting an area
 
 Recording:
  ffmpeg
- dmenu (or a clone) (with the binary name 'menu')
+ rofi / dmenu / clone with binary name 'menu'
 
 Screenshotting:
  github.com/neXromancers/shotgun
