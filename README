@@ -41,6 +41,7 @@ AND / OR
 
 Recording:
  ffmpeg
+ pkill
  rofi / dmenu / clone with binary name 'menu'
 
 Screenshotting:

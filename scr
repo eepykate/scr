@@ -47,11 +47,12 @@ help() {
 	cat << EOF
 Examples:
  # select an area then record it at 30fps
- scr -m s -f 30 -c
- # select an area then record it at 30fps and save as 'recording.mp4'
- scr -m s -f 30 -c recording.mp4
+ scr -m s -c
+ # select an area then record it at 60fps and save as 'recording.mp4'
+ scr -m s -f 60 -c recording.mp4
 
 Options
+ -A    screenshot fullscreen
  -S    screenshot a selection
  -F    screenshot focused window
 
@@ -85,6 +86,7 @@ AND / OR
 
 Recording:
  ffmpeg
+ pkill
  rofi / dmenu / clone with binary name 'menu'
 
 Screenshotting:
@@ -98,7 +100,7 @@ xc() { xclip -sel clip -t image/png "$1"; }
 
 case $1 in
 	-F) shotgun -i "$(pfw)" "${2:-$n}"; xc "${2:-$n}"; exit;;
-	""|*.png) shotgun -g "$(mattr -g "$(pfm)")" "${1:-$n}"; xc "${1:-$n}"; exit;;
+	-A) shotgun -g "$(mattr -g "$(pfm)")" "${2:-$n}"; xc "${2:-$n}"; exit;;
 	-S) w="$(boox)" &&
 		sleep 0.05 &&
 		n="${n%.*}-${w%%+*}.png" &&
@@ -132,7 +134,7 @@ done
 [ "$REC_DIR" ] &&
 	mkdir -p "$REC_DIR"
 
-[ -f /tmp/"${0##*/}"-pid ] && notify-send "${0##*/} is already running, exiting." && exit
+[ -f /tmp/"${0##*/}"-pid ] && pkill -x "${0##*/}" && exit
 
 
 # load profile
@@ -166,7 +168,7 @@ case $method in
 		if [ "$(echo "$lsm" | wc -l)" = 1 ]; then
 			display="$lsm"
 		else  # if there are other displays ask the user which one to use
-			[ ! "$display" ] && display="$(printf %b "$lsm" | m -p "Display to record")" || exit 1
+			[ ! "$display" ] && { display="$(printf %b "$lsm" | m -p "Display to record")" || exit 1; }
 		fi
 
 		# get information about the display
@@ -190,14 +192,11 @@ case $method in
 		[ "$(( height % 2 ))" = 1 ] && height="$(( height + 1 ))"
 	;;
 	*)
-		echo "Invalid method; exiting"
+		echo "Invalid method; exiting"; exit
 	;;
 esac
 
-
-
-# prompt for framerate
-[ "$rate" ] || rate="$(printf "30\n60\n" | m -p "Framerate")"
+rate="${rate:-30}"
 
 # save profile
 [ "$profile" ] && cat << EOF > "$profile_location"
@@ -237,5 +236,5 @@ if [ "$ready" = yes ]; then
 	  "$output"
 
 	rm /tmp/"${0##*/}"-pid
-	notify-send -t 2000 "Recording Stopped"
+	notify-send -t 2000 "Recording Saved"
 fi
