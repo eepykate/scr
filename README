@@ -3,9 +3,9 @@
 
 Examples:
  # select an area then record it at 30fps
- scr -m s -f 30 -c
- # select an area then record it at 30fps and save as 'recording.mp4'
- scr -m s -f 30 -c recording.mp4
+ scr -m s -c
+ # select an area then record it at 60fps and save as 'recording.mp4'
+ scr -m s -f 60 -c recording.mp4
 
 Options
  -S    screenshot a selection
