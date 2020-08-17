@@ -67,9 +67,6 @@ Options
  -n    disable NVENC for unsupported nvidia cards
  -a    Record desktop audio
 
-if 0 args are provided, screenshot the focused monitor
-use '-r' as a placeholder option
-
 ? = Option requires another argument
 
 Variables
@@ -82,7 +79,7 @@ Variables
 Dependencies
  github.com/pockata/mmutils | getting info about displays
 AND / OR
- github.com/BanchouBoo/boox / slop / crud | selecting an area
+ github.com/BanchouBoo/boox / github.com/ix/crud / slop | selecting an area
 
 Recording:
  ffmpeg

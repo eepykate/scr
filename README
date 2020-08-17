@@ -8,6 +8,7 @@ Examples:
  scr -m s -f 60 -c recording.mp4
 
 Options
+ -A    screenshot fullscreen
  -S    screenshot a selection
  -F    screenshot focused window
 
@@ -22,22 +23,19 @@ Options
  -n    disable NVENC for unsupported nvidia cards
  -a    Record desktop audio
 
-if 0 args are provided, screenshot the focused monitor
-use '-r' as a placeholder option
-
 ? = Option requires another argument
 
 Variables
  REC_DIR: If unset, saves in the current directory
- REC_FILE: If unset, saves as '\$(date '+%Y-%m-%d_%H-%M-%S').mp4'
+ REC_FILE: If unset, saves as '$(date '+%Y-%m-%d_%H-%M-%S').mp4'
 
  SCR_DIR: If unset, saves in the current directory
- SCR_FILE: If unset, saves as '\$(date '+%Y-%m-%d_%H-%M-%S').png'
+ SCR_FILE: If unset, saves as '$(date '+%Y-%m-%d_%H-%M-%S').png'
 
 Dependencies
  github.com/pockata/mmutils | getting info about displays
 AND / OR
- github.com/BanchouBoo/boox / slop / crud | selecting an area
+ github.com/BanchouBoo/boox / github.com/ix/crud / slop | selecting an area
 
 Recording:
  ffmpeg
