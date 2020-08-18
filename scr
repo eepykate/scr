@@ -185,13 +185,15 @@ fi
 
 case $method in
 	d*)
-		v=$(mon)
-		set -- $v
-		[ "$#" -le 2 ] && mon="$2" || mon=$(printf '%s\n' "$v" | menu)
-		mon=${mon##* }
+		[ "$display" ] || {
+			v=$(mon)
+			set -- $v
+			[ "$#" -le 2 ] && display="$2" || display=$(printf '%s\n' "$v" | menu)
+		}
+		display=${display##* }
 		oIFS=$IFS
 		IFS=+x
-		set -- $mon
+		set -- $display
 		IFS=$oIFS
 	;;
 	s*)
