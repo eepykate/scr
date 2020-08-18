@@ -2,7 +2,7 @@
            (and recording ^)
 
 Installing:
- Arch: scr (AUR)
+ Arch: scr-git (AUR)
  Other Distros: copy 'scr' to somewhere in $PATH
 
 Examples:
