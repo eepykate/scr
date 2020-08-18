@@ -1,6 +1,10 @@
    Super CRappy SCReenshot SCRipt for Sound Cloud Rappers
            (and recording ^)
 
+Installing:
+ Arch: scr (AUR)
+ Other Distros: copy 'scr' to somewhere in $PATH
+
 Examples:
  # select an area then record it at 30fps
  scr -m s -c
