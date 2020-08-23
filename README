@@ -15,6 +15,7 @@ Options
  -A    screenshot primary monitor
  -S    screenshot a selection
  -F    screenshot focused window
+ -G<WxH+X+Y> screenshot a custom geometry
 
  -s    save the recording
  -h    display this message

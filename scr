@@ -55,6 +55,7 @@ Options
  -A    screenshot primary monitor
  -S    screenshot a selection
  -F    screenshot focused window
+ -G<WxH+X+Y> screenshot a custom geometry
 
  -s    save the recording
  -h    display this message
@@ -94,7 +95,7 @@ EOF
 }
 
 mon() {
-	xrandr | while read -r l; do
+	xrandr --current | while read -r l; do
 		case $l in
 			*\ connected*) ;;
 			*) continue;;
@@ -123,7 +124,15 @@ case $1 in
 		shotgun -g "$i" "$n"; xc "$n"
 		exit
 	;;
-	-S) n="${2:-$n}"
+	-G*)
+		n=${2:-$n}
+		[ "${1#??}" ] &&
+			shotgun -g "${1#??}" "$n" &&
+			xc "$n"
+		exit
+	;;
+	-S)
+		n="${2:-$n}"
 		set -- $(sel) &&
 		sleep 0.05 &&
 		n="${n%.*}-$1x$2.png" &&
