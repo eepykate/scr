@@ -108,37 +108,27 @@ mon() {
 	done
 }
 
+screen() {
+	shotgun -g "$1" "${2:-$n}"
+	xc "${2:-$n}"
+	exit
+}
+
 xc() { xclip -sel clip -t image/png "$1"; }
 
 case $1 in
-	-F) shotgun -i "$(pfw)" "${2:-$n}"; xc "${2:-$n}"; exit;;
+	-F)  shotgun -i "$(pfw)" "${2:-$n}"; xc "${2:-$n}"; exit;;
+	-G*) screen    "${1#??}" "${2:-$n}";;
+	-S)
+		set -- $(sel) "$2"
+		screen "$1x$2+$3+$4" "${5:-${n%.*}-$1x$2.png}"
+	;;
 	-A)
-		n="${2:-$n}"
-		# if only I could just use mmutils...
-		v=$(mon)
-		set -- $v
-		for i; do
+		for i in $(mon); do
 			[ "$a" ] && break
 			[ "${i##*_}" = primary ] && a=.
 		done
-		shotgun -g "$i" "$n"; xc "$n"
-		exit
-	;;
-	-G*)
-		n=${2:-$n}
-		[ "${1#??}" ] &&
-			shotgun -g "${1#??}" "$n" &&
-			xc "$n"
-		exit
-	;;
-	-S)
-		n="${2:-$n}"
-		set -- $(sel) &&
-		sleep 0.05 &&
-		n="${n%.*}-$1x$2.png" &&
-		shotgun -g "$1x$2+$3+$4" "$n"
-		xc "$n"
-		exit
+		screen "$i" "${2:-$n}"
 	;;
 esac
 
