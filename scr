@@ -9,10 +9,9 @@
 trap 'pkill -2 -P $(cat /tmp/"${0##*/}"-pid)' 15 2
 
 m() {
-	for i in menu 'rofi -dmenu' dmenu; do
-		command -v "${i%% *}" >/dev/null &&
-			{ $i "$@"; return $?; }
-	done
+	command -v menu >/dev/null && { menu "$@"; return $?; }
+	command -v rofi >/dev/null && { rofi -dmenu "$@"; return $?; }
+	command -v dmenu >/dev/null && { dmenu "$@"; return $?; }
 }
 
 sel() {
