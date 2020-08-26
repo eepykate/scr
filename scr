@@ -186,7 +186,7 @@ case $method in
 		[ "$display" ] || {
 			v=$(mon)
 			set -- $v
-			[ "$#" -le 2 ] && display="$2" || display=$(printf '%s\n' "$v" | menu)
+			[ "$#" -le 2 ] && display="$2" || display=$(printf '%s\n' "$v" | m)
 		}
 		display=${display##* }
 		oIFS=$IFS
