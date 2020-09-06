@@ -8,6 +8,9 @@
 
 trap 'pkill -2 -P $(cat /tmp/"${0##*/}"-pid)' 15 2
 
+# clean environment
+unset a s d profile method display audio bitrate nvenc extra ready
+
 m() {
 	command -v menu >/dev/null && { menu "$@"; return $?; }
 	command -v rofi >/dev/null && { rofi -dmenu "$@"; return $?; }
