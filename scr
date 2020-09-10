@@ -110,6 +110,9 @@ mon() {
 	done
 }
 
+[ "$SCR_DIR" ] &&
+	mkdir -p "$SCR_DIR"
+
 screen() {
 	shotgun -g "$1" "${2:-$n}"
 	xc "${2:-$n}"
