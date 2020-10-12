@@ -97,9 +97,10 @@ EOF
 }
 
 mon() {
+	a=$1
 	xrandr --current | while read -r l; do
 		case $l in
-			*\ connected*) ;;
+			*"${a:- connected}"*) ;;
 			*) continue;;
 		esac
 		set -- $l
@@ -189,7 +190,7 @@ fi
 
 case $method in
 	d*)
-		[ "$display" ] || {
+		[ "$display" ] && display=$(mon "$display";:) || {
 			v=$(mon)
 			set -- $v
 			[ "$#" -le 2 ] && display="$2" || display=$(printf '%s\n' "$v" | m)
