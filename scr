@@ -79,8 +79,9 @@ sel() {
 audio() {
 	# find default audio device
 	[ "$1" ] || {
-		pacmd="$(pacmd list-sources | grep -i -B 1 output)"
-		dev="$(echo "$pacmd" | grep -m1 -i '\* index' | grep -o '[0-9]\+')"
+		set -- $(pacmd stat | grep -i "default sink name")
+		shift 3
+		set -- "$(pacmd list | grep -i "sink: [0-9].*$*" | sed 's/.*sink: \([0-9]\+\).*/\1/')"
 	}
 	audio="-f pulse -i ${1:-$dev}"
 }
@@ -175,19 +176,20 @@ fi
 
 [ $# != 4 ] && echo "invalid method, exiting" && exit
 
+[ "$nvenc" ] || ex glxinfo && glxinfo | grep -q nvenc && nvenc='-c:v nvenc_h264'
+
 # save profile
 [ "$profile" ] && {
 cat << EOF > "$dir/$profile"
-audio=$audio
-rate=$rate
-nvenc=$nvenc
-select=$select
+bitrate='$bitrate'
+audio='$audio'
+rate='$rate'
+nvenc='$nvenc'
+select='$select'
 profilem=1
 set -- $1 $2 $3 $4
 EOF
 }
-
-[ "$nvenc" ] || ex glxinfo && glxinfo | grep -q nvenc && nvenc='-c:v nvenc_h264'
 
 [ "$confirm" ] || confirm=$(printf "yes\nno" | menu -p "start the recording?")
 
@@ -200,8 +202,8 @@ EOF
 		-f x11grab       \
 		-draw_mouse 1    \
 		-s "$1x$2"       \
-		-i "$DISPLAY.0+$3,$4" \
 		-r "${rate:-30}" \
+		-i "$DISPLAY.0+$3,$4" \
 		-pix_fmt yuv420p \
 		$bitrate         \
 		$nvenc           \
