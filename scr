@@ -78,12 +78,13 @@ sel() {
 
 audio() {
 	# find default audio device
+	unset var
 	[ "$1" ] || {
-		set -- $(pacmd stat | grep -i "default sink name")
-		shift 3
-		set -- "$(pacmd list | grep -i "sink: [0-9].*$*" | sed 's/.*sink: \([0-9]\+\).*/\1/')"
+		var=$(ffmpeg -hide_banner -sinks pulse | grep '^\*')
+		set -- ${var#\*}
+		var=$1.monitor
 	}
-	audio="-f pulse -i ${1:-$dev}"
+	audio="-f pulse -i ${var:-$1}"
 }
 
 # list all monitors or a specific one
@@ -153,7 +154,7 @@ done
 	case $var in
 		selection) select=1;;
 		# save the monitor name (for profiles)
-		[A-Z]*) monitor=$1; shift;;
+		*) monitor=$1; shift;;
 	esac
 }
 
@@ -176,13 +177,12 @@ fi
 
 [ $# != 4 ] && echo "invalid method, exiting" && exit
 
-[ "$nvenc" ] || ex glxinfo && glxinfo | grep -q nvenc && nvenc='-c:v nvenc_h264'
+[ "$nvenc" ] || ex glxinfo && glxinfo | grep -q nvenc && nvenc='-vcodec h264_nvenc'
 
 # save profile
 [ "$profile" ] && {
 cat << EOF > "$dir/$profile"
 bitrate='$bitrate'
-audio='$audio'
 rate='$rate'
 nvenc='$nvenc'
 select='$select'
