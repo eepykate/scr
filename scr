@@ -1,8 +1,30 @@
 #!/bin/sh
 #  scr scr scr for scr
+#
+# some notes:
+#  inconsistent use of : and # for comments is due to : appearing
+# when using the '-x' shell option, making it easier to debug
+#
+
+# saving & pidfile
+[ "$1" = "-s" ] && exec pkill "${0##*/}"
+
+trap '' INT
+trap 'kill $pid' TERM
+
+# clean environment
+unset var confirm select geometry display rate profile audio nvenc
+
+: default variables \
+	"${scr_dir:=$PWD}"  "${scr_file:=$(date '+%Y-%m-%d_%H-%M-%S').png}" \
+	"${rec_dir:=$PWD}"  "${rec_file:=$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
+
+output=$rec_dir/$rec_file
+
+
 
 help() {
-cat << EOF
+exec cat << EOF
 scr (scr scr for scr)
 Super CRappy SCReenshot SCRipt for Sound Cloud Rappers
 
@@ -15,66 +37,57 @@ examples
 options
  screenshots
   -S     selection
-	-P     primary display
-	-G     custom geometry
+  -P     primary display
+  -G     custom geometry
  recording
-	-s     save
-	-e     select
-	-m:    monitor
-	-g:    custom geometry
+  -s     save
+  -e     select
+  -m:    monitor
+  -g:    custom geometry
   -r:    framerate
-	-b:    bitrate (in MB)
-	-p:    profile
-	-a::   audio   (optional arg for changing pulse device)
-	-c     don't confirm when starting
+  -b:    bitrate (in megabits)
+  -p:    profile
+  -a::   audio   (optional arg for changing pulse device)
+  -c     don't confirm when starting
 :  = arg is required, ex: '-r60'
 
 variables:
-  scr_dir & rec_dir
- scr_file & rec_file
+ scr_dir,  rec_dir
+ scr_file, rec_file
 
 dependencies
   xrandr
-	boox / slop
-	rofi / dmenu
+  boox / slop
+  rofi / dmenu
  screenshots
   shotgun
-	xclip
+  xclip
  recording
-  pkill
   ffmpeg
-	notify-send (optional, easy to replace/remove)
+  procps-ng (pkill/pgrep, busybox-compatible)
+  notify-send (optional, easy to replace/remove)
 EOF
 }
 
-# clean environment
-unset var confirm select geometry display rate profile audio nvenc
-
-# pidfile & saving
-pidf=/tmp/${0##*/}-pid
-trap 'pkill -P $(cat $pidf)' TERM INT
-
-# default values
-: "${scr_dir:=$PWD}"  "${rec_dir:=$PWD}"  \
-	"${scr_file:=$(date '+%Y-%m-%d_%H-%M-%S').png}" \
-	"${rec_file:=$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
-output="$rec_dir/$rec_file"
-
-# shorthand for checking whether a command exists
-ex() { command -v "$1" >/dev/null 2>&1; }
-
-men() {
-	ex menu &&  { menu "$@"; return; }
-	ex rofi &&  { rofi -dmenu "$@"; return; }
-	ex dmenu && { dmenu -i "$@"; return; }
+# shorthand for checking whether a command exists then running it
+# use with subshell for easy alternatives, as 'exec' will replace
+# the parent and as such not execute any following commands
+ex() {
+	command -v "$1" >/dev/null && exec "$@"
 }
 
-sel() {
-	# allow parsing an arbitrary argument to format like 200x140+30+50
-	# (the default) instead of separated by spaces
-	ex boox && { boox ${1:-'%w %h %x %y'}; return; }
-	ex slop && { slop ${1:--f '%w %h %x %y'}; return; }
-}
+men() {(
+	ex menu "$@"
+	ex rofi -dmenu "$@"
+	ex dmenu -i "$@"
+)}
+
+sel() {(
+	# pass an arbitrary argument to format with spaces instead of
+	# 200x140+30+50 (the default)
+	ex boox ${1:+'%w %h %x %y'}
+	ex slop ${1:+-f '%w %h %x %y'}
+)}
 
 audio() {
 	# find default audio device
@@ -104,82 +117,94 @@ monitors() {
 
 # screenshots
 screen() {
-	shotgun -g "$1"  "${2:-$scr_dir/$scr_file}" &&
-		xclip -sel clip -t image/png "${2:-$scr_dir/$scr_file}"
+	file=${2:-$scr_dir/$scr_file}
+	shotgun -g "$1"  "$file" &&
+		xclip -sel clip -t image/png "$file"
 	exit
 }
 
+
+
 case $1 in
-	-S)  screen "$(sel ' ')" "$2";;
+	-S)  screen "$(sel)"  "$2";;
 	-G*) screen "${1#??}" "$2";;
-	-P)  var=$2
-		set -- $(monitors primary);  shift
-		screen "$1x$2+$3+$4" "$var"
+	-P)  set -- $(monitors primary) "$2"; shift
+	     screen "$1x$2+$3+$4" "$5"
 esac
 
 while [ "$1" ]; do
+arg=${1#??}
 case $1 in
-	-h)  help; exit;;
+	-h)  help;;
 
+	# recording
 	-s)  pkill -x "${0##*/}"; exit;;
-	-g*) geometry=${1#??};;
-	-m*) monitor=${1#??};;
-	-r*) rate=${1#??};;
-	-b*) bitrate="-b:v ${1#??}M";;
-	-p*) profile=${1#??};;
-	-a*) audio "${1#??}";;
+	-g*) geometry=$arg;;
+	-m*) monitor=$arg;;
+	-r*) rate=$arg;;
+	-b*) bitrate="-b:v ${arg}M";;
+	-p*) profile=$arg;;
+	-a*) audio "$arg";;
 	-c)  confirm=yes;;
 	-e)  select=1;;
 	-n)  nvenc=1;;
-	*)   output="$1"; break
+	--)  output=$2; break;;
+	*)   output=$1; break
 esac
 shift
 done
 
-[ "$(pgrep -x "${0##*/}$" | wc -l)" -gt 2 ] &&
+
+# procps-ng pgrep has -c, however busybox's doesn't, and it just so
+[ "$(pgrep -x "${0##*/}")" != "$$" ] &&
 	echo "error: multiple instances running" && exit 1
 
-# load profile
-[ "$profile" ] && {
+
+: load profile
+if [ "$profile" ]; then
 	dir=${XDG_CONFIG_HOME:=$HOME/.config}/scr
 	mkdir -p "$dir"
 	touch "$dir/$profile"
 	. "$dir/$profile"
-}
 
-# if no methods are specified, prompt for one
-[ "$geometry" ] || [ "$select" ] || [ "$monitor" ] || [ "$profilem" ] || {
-	var=$(printf "%b\n" "$(monitors)\nselection" | menu)
-	set -- $var
-	case $var in
-		selection) select=1;;
-		# save the monitor name (for profiles)
-		*) monitor=$1; shift;;
-	esac
-}
-
-if [ "$geometry" ]; then
+elif [ "$geometry" ]; then
 	IFS='x+ '
 	set -- $geometry
 	# allow for only specifying width and height
 	set -- $1 $2 ${3:-0} ${4:-0}
 
-# github.com/BanchouBoo/boox
 elif [ "$select" ]; then
-	set -- $(sel)
+	set -- $(sel arbitrary-argument)
 
 elif [ "$monitor" ]; then
 	var=$(monitors "$monitor")
 	IFS='x+ '
 	set -- $var
 	shift
+
+else
+	# if no methods are specified, prompt for one
+	: method prompting
+	var=$(printf "%b\n" "$(monitors)\nselection" | menu)
+	set -- $var
+	case $var in
+		selection) select=1;;
+		# save the monitor name (for profiles)
+		[a-zA-Z]*) monitor=$1; shift;;
+	esac
+
 fi
 
 [ $# != 4 ] && echo "invalid method, exiting" && exit
 
-[ "$nvenc" ] || ex glxinfo && glxinfo | grep -q nvenc && nvenc='-vcodec h264_nvenc'
 
-# save profile
+: nvidia hardware acceleration
+[ "$nvenc" ] || {
+	ex glxinfo | grep -q nvenc && nvenc='-vcodec h264_nvenc'
+}
+
+
+: save profile
 [ "$profile" ] && {
 cat << EOF > "$dir/$profile"
 bitrate='$bitrate'
@@ -191,11 +216,12 @@ set -- $1 $2 $3 $4
 EOF
 }
 
+
+: confirmation prompt
 [ "$confirm" ] || confirm=$(printf "yes\nno" | menu -p "start the recording?")
 
 [ "$confirm" = yes ] && {
 	notify-send -t 800 "recording started"
-	echo "$$" > "$pidf"
 	ffmpeg -y \
 		-loglevel error  \
 		$audio           \
@@ -208,9 +234,9 @@ EOF
 		$bitrate         \
 		$nvenc           \
 		-q:v 0           \
-		"$output"
+		"$output" &
+	pid=$!
+	wait $pid
 
-	rm "$pidf"
 	notify-send -t 2000 "recording saved"
-
 }
