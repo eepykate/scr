@@ -175,6 +175,7 @@ elif [ "$geometry" ]; then
 
 elif [ "$select" ]; then
 	set -- $(sel arbitrary-argument)
+	set -- $(( $1+($1%2) )) $(( $2+($2%2) )) $3 $4
 
 elif [ "$monitor" ]; then
 	var=$(monitors "$monitor")
