@@ -117,7 +117,7 @@ monitors() {
 
 # screenshots
 screen() {
-	file=${2:-$scr_dir/$scr_file}
+	file=${2:-$scr_dir/${scr_file%.png}$3.png}
 	shotgun -g "$1"  "$file" &&
 		xclip -sel clip -t image/png "$file"
 	exit
@@ -126,7 +126,7 @@ screen() {
 
 
 case $1 in
-	-S)  screen "$(sel)"  "$2";;
+	-S)  var=$(sel) && screen "$var"  "$2"  "_${var%%+*}";;
 	-G*) screen "${1#??}" "$2";;
 	-P)  set -- $(monitors primary) "$2"; shift
 	     screen "$1x$2+$3+$4" "$5"
