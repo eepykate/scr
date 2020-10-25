@@ -185,7 +185,7 @@ elif [ "$monitor" ]; then
 else
 	# if no methods are specified, prompt for one
 	: method prompting
-	var=$(printf "%b\n" "$(monitors)\nselection" | menu)
+	var=$(printf "%b\n" "$(monitors)\nselection" | men)
 	set -- $var
 	case $var in
 		selection) select=1;;
@@ -218,7 +218,7 @@ EOF
 
 
 : confirmation prompt
-[ "$confirm" ] || confirm=$(printf "yes\nno" | menu -p "start the recording?")
+[ "$confirm" ] || confirm=$(printf "yes\nno" | men -p "start the recording?")
 
 [ "$confirm" = yes ] && {
 	notify-send -t 800 "recording started"
