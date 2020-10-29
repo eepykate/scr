@@ -15,9 +15,9 @@ trap 'kill $pid' TERM
 # clean environment
 unset var confirm select geometry display rate profile audio nvenc
 
-: default variables \
-	"${scr_dir:=$PWD}"  "${scr_file:=$(date '+%Y-%m-%d_%H-%M-%S').png}" \
-	"${rec_dir:=$PWD}"  "${rec_file:=$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
+eval \
+	scr_dir="${scr_dir:-$PWD}"  scr_file="${scr_file:-$(date '+%Y-%m-%d_%H-%M-%S').png}" \
+	rec_dir="${rec_dir:-$PWD}"  rec_file="${rec_file:-$(date '+%Y-%m-%d_%H-%M-%S').mp4}"
 
 output=$rec_dir/$rec_file
 
@@ -25,7 +25,7 @@ output=$rec_dir/$rec_file
 
 help() {
 exec cat << EOF
-scr (scr scr for scr)
+scr (scr scr scr for scr)
 Super CRappy SCReenshot SCRipt for Sound Cloud Rappers
 
 examples
