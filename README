@@ -1,4 +1,4 @@
-scr (scr scr for scr)
+scr (scr scr scr for scr)
 Super CRappy SCReenshot SCRipt for Sound Cloud Rappers
 
 examples
@@ -10,32 +10,33 @@ examples
 options
  screenshots
   -S     selection
-	-P     primary display
-	-G     custom geometry
+  -P     primary display
+  -G     custom geometry
  recording
-	-s     save
-	-e     select
-	-m:    monitor
-	-g:    custom geometry
+  -s     save
+  -e     select
+  -m:    monitor
+  -g:    custom geometry
   -r:    framerate
-	-b:    bitrate (in MB)
-	-p:    profile
-	-a::   audio   (optional arg for changing pulse device)
-	-c     don't confirm when starting
+  -b:    bitrate (in megabits)
+  -p:    profile
+  -x:    extra arg to pass to ffmpeg
+  -a::   audio   (optional arg for changing pulse device)
+  -c     don't confirm when starting
 :  = arg is required, ex: '-r60'
 
 variables:
-  scr_dir & rec_dir
- scr_file & rec_file
+ scr_dir,  rec_dir
+ scr_file, rec_file
 
 dependencies
   xrandr
-	boox / slop
-	rofi / dmenu
+  boox / slop
+  rofi / dmenu
  screenshots
   shotgun
-	xclip
+  xclip
  recording
-  pkill
   ffmpeg
-	notify-send (optional, easy to replace/remove)
+  procps-ng (pkill/pgrep, busybox-compatible)
+  notify-send (optional, easy to replace/remove)

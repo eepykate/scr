@@ -13,7 +13,7 @@ trap '' INT
 trap 'kill $pid' TERM
 
 # clean environment
-unset var confirm select geometry display rate profile audio nvenc
+unset var confirm select geometry display rate profile audio nvenc extra
 
 eval \
 	scr_dir="${scr_dir:-$PWD}"  scr_file="${scr_file:-$(date '+%Y-%m-%d_%H-%M-%S').png}" \
@@ -47,6 +47,7 @@ options
   -r:    framerate
   -b:    bitrate (in megabits)
   -p:    profile
+  -x:    extra arg to pass to ffmpeg
   -a::   audio   (optional arg for changing pulse device)
   -c     don't confirm when starting
 :  = arg is required, ex: '-r60'
@@ -145,6 +146,7 @@ case $1 in
 	-b*) bitrate="-b:v ${arg}M";;
 	-p*) profile=$arg;;
 	-a*) audio "$arg";;
+	-x*) extra=-${1#??};;
 	-c)  confirm=yes;;
 	-e)  select=1;;
 	-n)  nvenc=1;;
@@ -175,7 +177,6 @@ elif [ "$geometry" ]; then
 
 elif [ "$select" ]; then
 	set -- $(sel arbitrary-argument)
-	set -- $(( $1+($1%2) )) $(( $2+($2%2) )) $3 $4
 
 elif [ "$monitor" ]; then
 	var=$(monitors "$monitor")
@@ -189,14 +190,18 @@ else
 	var=$(printf "%b\n" "$(monitors)\nselection" | men)
 	set -- $var
 	case $var in
-		selection) select=1;;
+		selection) select=1; set -- $(sel arbitrary-argument);;
 		# save the monitor name (for profiles)
 		[a-zA-Z]*) monitor=$1; shift;;
 	esac
 
 fi
 
+
 [ $# != 4 ] && echo "invalid method, exiting" && exit
+
+# uneven numbers
+set -- $(( $1+($1%2) )) $(( $2+($2%2) )) $3 $4
 
 
 : nvidia hardware acceleration
@@ -234,6 +239,7 @@ EOF
 		-pix_fmt yuv420p \
 		$bitrate         \
 		$nvenc           \
+		$extra           \
 		-q:v 0           \
 		"$output" &
 	pid=$!
