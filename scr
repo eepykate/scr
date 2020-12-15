@@ -157,19 +157,20 @@ shift
 done
 
 
-# procps-ng pgrep has -c, however busybox's doesn't, and it just so
+# procps-ng pgrep has -c, however busybox's doesn't, and procps is way slower
 [ "$(pgrep -x "${0##*/}")" != "$$" ] &&
 	echo "error: multiple instances running" && exit 1
 
 
 : load profile
-if [ "$profile" ]; then
+[ "$profile" ] && {
 	dir=${XDG_CONFIG_HOME:=$HOME/.config}/scr
 	mkdir -p "$dir"
 	touch "$dir/$profile"
 	. "$dir/$profile"
+}
 
-elif [ "$geometry" ]; then
+if [ "$geometry" ]; then
 	IFS='x+ '
 	set -- $geometry
 	# allow for only specifying width and height
@@ -217,8 +218,8 @@ bitrate='$bitrate'
 rate='$rate'
 nvenc='$nvenc'
 select='$select'
+monitor='$monitor'
 profilem=1
-set -- $1 $2 $3 $4
 EOF
 }
 
