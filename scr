@@ -14,6 +14,7 @@ trap 'kill $pid' TERM
 
 # clean environment
 unset var confirm select geometry display rate profile audio nvenc extra
+oIFS="$IFS"
 
 eval \
 	scr_dir="${scr_dir:-$PWD}"  scr_file="${scr_file:-$(date '+%Y-%m-%d_%H-%M-%S').png}" \
@@ -92,13 +93,16 @@ sel() {(
 
 audio() {
 	# find default audio device
-	unset var
+	unset var mic
 	[ "$1" ] || {
 		var=$(ffmpeg -hide_banner -sinks pulse | grep '^\*')
 		set -- ${var#\*}
 		var=$1.monitor
+		mic=$(ffmpeg -hide_banner -f pulse -sources | grep VirtualMic)
 	}
 	audio="-f pulse -i ${var:-$1}"
+	[ "$mic" ] && audio="$audio -f pulse -i VirtualMic -filter_complex "\
+"amix=inputs=2:duration=first:dropout_transition=1000,volume=8"
 }
 
 # list all monitors or a specific one
@@ -228,6 +232,7 @@ EOF
 [ "$confirm" ] || confirm=$(printf "yes\nno" | men -p "start the recording?")
 
 [ "$confirm" = yes ] && {
+	IFS="$oIFS"
 	notify-send -t 800 "recording started"
 	ffmpeg -y \
 		-loglevel error  \
