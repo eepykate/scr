@@ -98,8 +98,9 @@ audio() {
 		var=$(ffmpeg -hide_banner -sinks pulse | grep '^\*')
 		set -- ${var#\*}
 		var=$1.monitor
-		mic=$(ffmpeg -hide_banner -f pulse -sources | grep VirtualMic)
+		mic=$(ffmpeg -hide_banner -sources pulse | grep VirtualMic)
 	}
+	[ "$1" ] || return
 	audio="-f pulse -i ${var:-$1}"
 	[ "$mic" ] && audio="$audio -f pulse -i VirtualMic -filter_complex "\
 "amix=inputs=2:duration=first:dropout_transition=1000,volume=8"
