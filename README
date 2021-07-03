@@ -1,11 +1,14 @@
 scr (scr scr scr for scr)
 Super CRappy SCReenshot SCRipt for Sound Cloud Rappers
 
+Companion of audrey (audio recorder, yes)
+(https://github.com/6gk/audrey)
+
 examples
- # select an area and record at 30fps
- scr -c -e
- # record from display HDMI-0 at 60fps, use profile 'wnd', and save as file.mp4
- scr -c -mHDMI-0 -r60 -pwnd file.mp4
+ ## select an area and record at 30fps
+ $ scr -c -e
+ ## record from display HDMI-0 at 60fps, use profile 'wnd', and save as file.mp4
+ $ scr -c -mHDMI-0 -r60 -pwnd file.mp4
 
 options
  screenshots
