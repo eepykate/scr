@@ -9,7 +9,7 @@
 #
 
 # saving & pidfile
-[ "$1" = "-s" ] && exec pkill "${0##*/}"
+[ "$1" = "-s" ] && exec pkill -x "${0##*/}"
 
 trap '' INT
 trap 'kill $pid' TERM
@@ -100,12 +100,12 @@ audio() {
 		var=$(ffmpeg -hide_banner -sinks pulse | grep '^\*')
 		set -- ${var#\*}
 		var=$1.monitor
-		mic=$(ffmpeg -hide_banner -sources pulse | grep VirtualMic)
+		mic=$(ffmpeg -hide_banner -sources pulse | grep Antlion_Audio)
 	}
 	[ "$1" ] || return
 	audio="-f pulse -i ${var:-$1}"
-	[ "$mic" ] && audio="$audio -f pulse -i VirtualMic -filter_complex "\
-"amix=inputs=2:duration=first:dropout_transition=1000,volume=8"
+	[ "$mic" ] && audio="$audio -f pulse -i alsa_input.usb-Antlion_Audio_Antlion_Wireless_Microphone-00.mono-fallback -filter_complex "\
+"amix=inputs=2:duration=first:dropout_transition=1000,volume=1"
 }
 
 # list all monitors or a specific one
@@ -134,7 +134,7 @@ screen() {
 
 
 case $1 in
-	-S)  var=$(sel) && screen "$var"  "$2"  "_${var%%+*}";;
+	-S)  var=$(sel); screen "$var"  "$2"  "_${var%%+*}";;
 	-G*) screen "${1#??}" "$2";;
 	-P)  set -- $(monitors primary) "$2"; shift
 	     screen "$1x$2+$3+$4" "$5"
@@ -146,17 +146,17 @@ case $1 in
 	-h)  help;;
 
 	# recording
-	-s)  pkill -x "${0##*/}"; exit;;
+	-s)  exec echo "'-s' should be the first argument...";;
 	-g*) geometry=$arg;;
 	-m*) monitor=$arg;;
 	-r*) rate=$arg;;
 	-b*) bitrate="-b:v ${arg}M";;
 	-p*) profile=$arg;;
 	-a*) audio "$arg";;
-	-x*) extra=-${1#??};;
+	-x)	 extra=$2; shift;;
 	-c)  confirm=yes;;
 	-e)  select=1;;
-	-n)  nvenc=1;;
+	-n)  nvenc=\ ;;
 	--)  output=$2; break;;
 	*)   output=$1; break
 esac
@@ -206,7 +206,7 @@ else
 fi
 
 
-[ $# != 4 ] && echo "invalid method, exiting" && exit
+[ $# != 4 ] && echo "invalid method, exiting" && exit 1
 
 # uneven numbers
 set -- $(( $1+($1%2) )) $(( $2+($2%2) )) $3 $4
@@ -245,7 +245,7 @@ EOF
 		-s "$1x$2"       \
 		-r "${rate:-30}" \
 		-i "$DISPLAY.0+$3,$4" \
-		-pix_fmt yuv420p \
+		-pix_fmt ${pixfmt:-yuv420p} \
 		$bitrate         \
 		$nvenc           \
 		$extra           \
