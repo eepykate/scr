@@ -11,7 +11,7 @@
 # saving & pidfile
 [ "$1" = "-s" ] && exec pkill -x "${0##*/}"
 
-trap '' INT
+trap ':' INT  # leaving the command empty produces weird behavior on bash.  6gk/scr#3
 trap 'kill $pid' TERM
 
 # clean environment
