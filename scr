@@ -1,11 +1,11 @@
 #!/bin/sh
-# scr scr scr for scr
-#  Super CRappy SCReenshot SCRipt for Sound Cloud Rappers
+# scr scr scr scr for scr
+#  Super CRappy SCReenshot & SCreen Recording SCRipt for Sound Cloud Rappers
 #  MIT License, 6gk/gk/gtk
 #
 # some notes:
-#  inconsistent use of : and # for comments is due to : appearing
-# when using the '-x' shell option, making it easier to debug
+#  - inconsistent use of : and # for comments is due to : appearing
+#    when using the '-x' shell option, making it easier to debug
 #
 
 # saving & pidfile
@@ -28,8 +28,8 @@ output=$rec_dir/$rec_file
 
 help() {
 exec cat << EOF
-scr (scr scr scr for scr)
-Super CRappy SCReenshot SCRipt for Sound Cloud Rappers
+scr (scr scr scr scr for scr)
+Super CRappy SCReenshot & SCreen Recording SCRipt for Sound Cloud Rappers
 
 examples
  # select an area and record at 30fps
