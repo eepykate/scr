@@ -1,0 +1,54 @@
+#!/bin/sh
+# audrey - audio recorder, yes.
+#  MIT License, 6gk/gk/gtk
+#  shellcheck disable=1007,2046,2086
+
+pid=/tmp/audrey_pid  mic=  desktop=  bruh=  out=
+
+# only allow one instance to be running at a time
+pgrep -F $pid && set -- -s
+
+case $1 in
+	-s) exec pkill -INT -F $pid;;
+	-*|'') ;;
+	*) out=$1
+esac
+
+# eval allows runtime command execution in variables
+[ "$out" ] ||
+	eval out=\""${audrey_dir:=$PWD}/${audrey_file:=$(date '+%Y-%m-%d_%H-%M-%S').mp3}"\"
+
+
+# get default output device (speakers)
+set -- $(ffmpeg -hide_banner -sinks pulse | sed -n 's/^\* //p')
+desktop="-f pulse -i $1.monitor"
+
+# get default input device (microphone)
+set -- $(ffmpeg -hide_banner -sources pulse | sed -n 's/^\* //p')
+case $1 in
+	*aloop*|*monitor) ;;  # ignore loopback devices
+	*)
+		mic="-f pulse -i $1"
+		# combine the mic and desktop audio into one stream (causes a slight delay/loss when recording starts & ends)
+		mic="$mic -filter_complex amerge"
+		# ffmpeg/pulse seems to add a delay to one of the streams, this makes them sync better [for me]
+		bruh="-ss 2"
+esac
+
+
+mkdir -p "${out%/*}"
+notify-send "started audrey"
+
+ffmpeg -y    \
+	-v error   \
+	$bruh      \
+	$desktop   \
+	$mic       \
+	-b:a 256K  \
+	"$out" &
+echo $! > $pid
+
+# handle ^c / pkill
+trap '' INT; trap 'kill -INT $!' TERM;  wait
+
+notify-send "stopped audrey"
