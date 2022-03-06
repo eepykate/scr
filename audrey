@@ -32,7 +32,7 @@ case $1 in
 		# combine the mic and desktop audio into one stream (causes a slight delay/loss when recording starts & ends)
 		mic="$mic -filter_complex amerge"
 		# ffmpeg/pulse seems to add a delay to one of the streams, this makes them sync better [for me]
-		bruh="-ss 2"
+		#bruh="-ss 0"
 esac
 
 

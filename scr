@@ -39,6 +39,7 @@ examples
 
 options
  screenshots
+  -A     all screens
   -S     selection
   -P     primary display
   -G     custom geometry
@@ -89,7 +90,7 @@ men() {(
 sel() {(
 	# pass an arbitrary argument to format with spaces instead of
 	# 200x140+30+50 (the default)
-	ex boox ${1:+'%w %h %x %y'}
+	ex boox ${1:+-f '%w %h %x %y'}
 	ex slop ${1:+-f '%w %h %x %y'}
 )}
 
@@ -134,6 +135,7 @@ screen() {
 
 
 case $1 in
+	-A)  screen "$(xrandr | sed -n 's/.*current \([0-9]*\) x \([0-9]*\).*/\1x\2/p')" "$2";;
 	-S)  var=$(sel); screen "$var"  "$2"  "_${var%%+*}";;
 	-G*) screen "${1#??}" "$2";;
 	-P)  set -- $(monitors primary) "$2"; shift
@@ -214,7 +216,9 @@ set -- $(( $1+($1%2) )) $(( $2+($2%2) )) $3 $4
 
 : nvidia hardware acceleration
 [ "$nvenc" ] || {
-	ex glxinfo | grep -q nvenc && nvenc='-vcodec h264_nvenc'
+	#ex glxinfo | grep -q nvenc && nvenc='-vcodec h264_nvenc'
+	ffmpeg -help encoder=h264_nvenc | grep -q 'Supported hardware devices: cuda' &&
+		nvenc='-vcodec h264_nvenc'
 }
 
 
